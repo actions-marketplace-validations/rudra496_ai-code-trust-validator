@@ -1,8 +1,6 @@
 """Tests for AI Trust Validator."""
 
-import pytest
-from ai_trust_validator import Validator, Config
-from ai_trust_validator.validator import Issue
+from ai_trust_validator import Config, Validator
 
 
 def test_validator_basic():
@@ -23,8 +21,7 @@ def test_security_sql_injection():
     """Test detection of SQL injection."""
     code = '''
 def get_user(user_id):
-    query = f"SELECT * FROM users WHERE id = {user_id}"
-    cursor.execute(query)
+    cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")
 '''
     validator = Validator()
     result = validator.validate(code, is_file=False)

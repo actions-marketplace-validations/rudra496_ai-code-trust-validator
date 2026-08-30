@@ -10,10 +10,10 @@ Detects logic errors and code quality issues:
 """
 
 import ast
-from typing import List, Set, Dict
+from typing import Dict, List, Set
 
 from ai_trust_validator.analyzers import BaseAnalyzer
-from ai_trust_validator.validator import Issue
+from ai_trust_validator.models import Issue
 
 
 class LogicAnalyzer(BaseAnalyzer):
@@ -50,10 +50,7 @@ class LogicAnalyzer(BaseAnalyzer):
         issues: List[Issue] = []
 
         for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                issues.extend(self._check_unreachable_in_block(node.body))
-
-            elif isinstance(node, (ast.For, ast.While, ast.AsyncFor)):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) or isinstance(node, (ast.For, ast.While, ast.AsyncFor)):
                 issues.extend(self._check_unreachable_in_block(node.body))
 
             elif isinstance(node, ast.If):
@@ -141,7 +138,7 @@ class LogicAnalyzer(BaseAnalyzer):
                     category="logic",
                     message=f"Variable '{name}' is assigned but never used",
                     line=self._get_line(node),
-                    suggestion=f"Remove unused variable or prefix with _ if intentional"
+                    suggestion="Remove unused variable or prefix with _ if intentional"
                 ))
 
         return issues
@@ -211,7 +208,7 @@ class LogicAnalyzer(BaseAnalyzer):
                             suggestion="Implement the function or mark as abstract"
                         ))
                     elif isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant):
-                        if str(body[0].value.value) == "...":
+                        if body[0].value.value is Ellipsis or str(body[0].value.value) == "...":
                             issues.append(Issue(
                                 severity="medium",
                                 category="logic",
